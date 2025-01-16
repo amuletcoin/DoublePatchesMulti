@@ -1424,7 +1424,7 @@ class Pelt:
             weights = (10, 10, 10, 10, 1)
 
         chosen_white_patches = set()
-         white_list = [
+        white_list = [
             Pelt.little_white,
             Pelt.mid_white,
             Pelt.high_white,
