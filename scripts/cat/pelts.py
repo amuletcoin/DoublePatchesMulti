@@ -1611,18 +1611,18 @@ def _describe_pattern(cat, short=False):
     color_name = "".join(color_name)
 
     if cat.pelt.white_patches:
-            if cat.pelt.white_patches == "FULLWHITE":
-                # If the cat is fullwhite, discard all other information. They are just white
-                color_name = i18n.t("cat.pelts.FULLWHITE")
-                pelt_name = ""
-            elif cat.pelt.name != "Calico":
-                white = i18n.t("cat.pelts.FULLWHITE")
-                if i18n.t("cat.pelts.WHITE", count=1) in color_name:
-                    color_name = white
-                elif any(white in Pelt.mostly_white for white in cat.pelt.white_patches):
-                    color_name = adjust_list_text([white, color_name])
-                else:
-                    color_name = adjust_list_text([color_name, white])
+        if cat.pelt.white_patches == "FULLWHITE":
+            # If the cat is fullwhite, discard all other information. They are just white
+            color_name = i18n.t("cat.pelts.FULLWHITE")
+            pelt_name = ""
+        elif cat.pelt.name != "Calico":
+            white = i18n.t("cat.pelts.FULLWHITE")
+            if i18n.t("cat.pelts.WHITE", count=1) in color_name:
+                color_name = white
+            elif any(white in Pelt.mostly_white for white in cat.pelt.white_patches):
+                color_name = adjust_list_text([white, color_name])
+            else:
+                color_name = adjust_list_text([color_name, white])
 
     if cat.pelt.points:
         color_name = i18n.t("cat.pelts.point", color=color_name)
