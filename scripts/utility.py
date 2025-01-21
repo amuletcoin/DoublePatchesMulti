@@ -2720,22 +2720,46 @@ def generate_sprite(
 
             # Create the patch image
             if cat.pelt.tortiepattern == "Single":
-                tortie_pattern = "SingleColour"
+                tortie_pattern = ["SingleColour"] * len(cat.pelt.pattern)
             else:
                 tortie_pattern = cat.pelt.tortiepattern
+            tortie_colours = cat.pelt.tortiecolour
 
-            for pattern in cat.pelt.pattern:
-                patches = sprites.sprites[
-                    tortie_pattern + cat.pelt.tortiecolour + cat_sprite
-                    ].copy()
-                patches.blit(
-                    sprites.sprites["tortiemask" + pattern + cat_sprite],
-                    (0, 0),
-                    special_flags=pygame.BLEND_RGBA_MULT
-                )
+            # MULTI TORTIE
+            if cat.pelt.pattern:
+                # Check that we can enumerate correctly: pattern count must match tortiepattern & tortiecolor counts
+                # make tortie pattern arr the same length as pelt pattern
+                if tortie_pattern:
+                    if len(cat.pelt.pattern) != len(tortie_pattern):
+                        diff = len(cat.pelt.pattern) - len(tortie_pattern)
+                        if diff > 0:
+                            for x in range(diff):
+                                tortie_pattern.append(tortie_pattern[0])
+                        if diff < 0:
+                            tortie_pattern = tortie_pattern[:diff]
+                # make tortie colors arr the same length as pelt pattern
+                if tortie_colours:
+                    if len(cat.pelt.pattern) != len(tortie_colours):
+                        diff = len(cat.pelt.pattern) - len(tortie_colours)
+                        if diff > 0:
+                            for x in range(diff):
+                                tortie_colours.append(tortie_colours[0])
+                        if diff < 0:
+                            tortie_colours = tortie_colours[:diff]
 
-                # Add patches onto cat.
-                new_sprite.blit(patches, (0, 0))
+                # Enumerate
+                for i, pattern in enumerate(cat.pelt.pattern):
+
+                    patches = sprites.sprites[
+                        tortie_pattern[i] + tortie_colours[i] + cat_sprite
+                        ].copy()
+                    patches.blit(
+                        sprites.sprites["tortiemask" + pattern + cat_sprite],
+                        (0, 0),
+                        special_flags=pygame.BLEND_RGBA_MULT,
+                    )
+                    # Add patches onto cat.
+                    new_sprite.blit(patches, (0, 0))
 
         # TINTS
         if (

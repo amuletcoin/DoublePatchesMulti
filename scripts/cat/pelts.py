@@ -1178,11 +1178,12 @@ class Pelt:
                         num += 3
 
                 if len(chosen_pattern) >= 2:
-                    print("DoublePatches: "+str(len(chosen_pattern))+" tortie patches!")
+                    print("DoublePatches: " + str(len(chosen_pattern)) + " tortie patches!")
 
                 self.pattern = list(chosen_pattern)
 
             wildcard_chance = game.config["cat_generation"]["wildcard_tortie"]
+            tortie_multicolor = game.config["cat_generation"]["multicolor_tortie_patches"]
             if self.colour:
                 # The "not wildcard_chance" allows users to set wildcard_tortie to 0
                 # and always get wildcard torties.
@@ -1191,61 +1192,99 @@ class Pelt:
                     # people are fans of the print message, so I'm putting it back
                     print("Wildcard tortie!")
 
-                    # Allow any pattern:
-                    self.tortiepattern = choice(Pelt.tortiebases)
+                    # MULTI TORTIE ENABLED
+                    if tortie_multicolor:
+                        for pattern in self.pattern:
+                            # Allow any pattern:
+                            self.tortiepattern = [choice(Pelt.tortiebases) for p in self.pattern]
 
-                    # Allow any colors that aren't the base color.
-                    possible_colors = Pelt.pelt_colours.copy()
-                    possible_colors.remove(self.colour)
-                    self.tortiecolour = choice(possible_colors)
+                            # Allow any colors that aren't the base color.
+                            possible_colors = Pelt.pelt_colours.copy()
+                            possible_colors.remove(self.colour)
+                            self.tortiecolour = [choice(possible_colors) for p in self.pattern]
+                    # Multi tortie disabled
+                    else:
+                        # Allow any pattern:
+                        single_tortiepattern = choice(Pelt.tortiebases)
+                        self.tortiepattern = [single_tortiepattern] * len(self.pattern)  # generate same pattern
+
+                        # Allow any colors that aren't the base color:
+                        possible_colors = Pelt.pelt_colours.copy()
+                        possible_colors.remove(self.colour)
+                        single_tortiecolor = choice(possible_colors)
+                        self.tortiecolour = [single_tortiecolor] * len(self.pattern)
 
                 else:
                     # Normal generation
-                    if self.tortiebase in ["singlestripe", "smoke", "single"]:
-                        self.tortiepattern = choice(
-                            [
-                                "tabby",
-                                "mackerel",
-                                "classic",
-                                "single",
-                                "smoke",
-                                "agouti",
-                                "ticked",
-                            ]
-                        )
+                    # MULTI TORTIE ENABLED
+                    if tortie_multicolor:
+                        for pattern in self.pattern:
+                            if self.tortiebase in ["singlestripe", "smoke", "single"]:
+                                patterned_choices = [
+                                    "tabby",
+                                    "mackerel",
+                                    "classic",
+                                    "single",
+                                    "smoke",
+                                    "agouti",
+                                    "ticked",
+                                ]
+                                self.tortiepattern = [choice(patterned_choices) for p in self.pattern]
+                            else:
+                                self.tortiepattern = [random.choices([self.tortiebase, "single"],
+                                                                     weights=[97, 3], k=1)[0] for p in self.pattern]
+                    # Multi tortie disabled
                     else:
-                        self.tortiepattern = random.choices(
-                            [self.tortiebase, "single"], weights=[97, 3], k=1
-                        )[0]
+                        if self.tortiebase in ["singlestripe", "smoke", "single"]:
+                            random_pattern = choice(
+                                [
+                                    "tabby",
+                                    "mackerel",
+                                    "classic",
+                                    "single",
+                                    "smoke",
+                                    "agouti",
+                                    "ticked",
+                                ]
+                            )
+                            self.tortiepattern = [random_pattern] * len(self.pattern)
+                        else:
+                            random_pattern = random.choices(
+                                [self.tortiebase, "single"], weights=[97, 3], k=1
+                            )[0]
+                            self.tortiepattern = [random_pattern] * len(self.pattern)
 
                     if self.colour == "WHITE":
                         possible_colors = Pelt.white_colours.copy()
                         possible_colors.remove("WHITE")
                         self.colour = choice(possible_colors)
 
-                    # Ginger is often duplicated to increase its chances
-                    if (self.colour in Pelt.black_colours) or (
-                        self.colour in Pelt.white_colours
-                    ):
-                        self.tortiecolour = choice(
-                            (Pelt.ginger_colours * 2) + Pelt.brown_colours
-                        )
-                    elif self.colour in Pelt.ginger_colours:
-                        self.tortiecolour = choice(
-                            Pelt.brown_colours + Pelt.black_colours * 2
-                        )
-                    elif self.colour in Pelt.brown_colours:
-                        possible_colors = Pelt.brown_colours.copy()
-                        possible_colors.remove(self.colour)
-                        possible_colors.extend(
-                            Pelt.black_colours + (Pelt.ginger_colours * 2)
-                        )
-                        self.tortiecolour = choice(possible_colors)
-                    else:
-                        self.tortiecolour = "GOLDEN"
-
+                    # MULTI TORTIE
+                    if tortie_multicolor:
+                        # Ginger is often duplicated to increase its chances
+                        if (self.colour in Pelt.black_colours) or (
+                                self.colour in Pelt.white_colours
+                        ):
+                            self.tortiecolour = [choice(
+                                (Pelt.ginger_colours * 2) + Pelt.brown_colours
+                            ) for p in self.pattern]
+                        elif self.colour in Pelt.ginger_colours:
+                            self.tortiecolour = [choice(
+                                Pelt.brown_colours + Pelt.black_colours * 2
+                            ) for p in self.pattern]
+                        elif self.colour in Pelt.brown_colours:
+                            possible_colors = Pelt.brown_colours.copy()
+                            possible_colors.remove(self.colour)
+                            possible_colors.extend(
+                                Pelt.black_colours + (Pelt.ginger_colours * 2)
+                            )
+                            self.tortiecolour = [choice(possible_colors) for p in self.pattern]
+                        else:
+                            self.tortiecolour = ["GOLDEN"] * len(self.pattern)
             else:
-                self.tortiecolour = "GOLDEN"
+                self.tortiecolour = ["GOLDEN"] * len(self.pattern)
+            if self.tortiecolour and len(self.tortiecolour) > 1:
+                print("Tortie colours:", self.tortiecolour)
         else:
             self.tortiebase = None
             self.tortiepattern = None
@@ -1641,8 +1680,9 @@ def _describe_torties(cat, color_name, short=False) -> [str, str]:
         if (
             cat.pelt.colour
             in Pelt.black_colours + Pelt.brown_colours + Pelt.white_colours
-            and cat.pelt.tortiecolour
-            in Pelt.black_colours + Pelt.brown_colours + Pelt.white_colours
+            and any(x in cat.pelt.tortiecolour for x
+                    in Pelt.black_colours + Pelt.brown_colours + Pelt.white_colours
+                    )
         ):
             return "cat.pelts.mottled", ""
         else:
@@ -1650,14 +1690,16 @@ def _describe_torties(cat, color_name, short=False) -> [str, str]:
 
     base = cat.pelt.tortiebase.lower()
 
-    patches_color = f"cat.pelts.{cat.pelt.tortiecolour}"
+    # MULTI TORTIE NOTE: expand on this later
+    patches_color = f"cat.pelts.{cat.pelt.tortiecolour[0]}"
     color_name.append("/")
     color_name.append(patches_color)
 
     if (
         cat.pelt.colour in Pelt.black_colours + Pelt.brown_colours + Pelt.white_colours
-        and cat.pelt.tortiecolour
-        in Pelt.black_colours + Pelt.brown_colours + Pelt.white_colours
+        and any(x in cat.pelt.tortiecolour for x
+                in Pelt.black_colours + Pelt.brown_colours + Pelt.white_colours
+                )
     ):
         return "cat.pelts.mottled_long", color_name
     else:
